@@ -1,47 +1,50 @@
 'use strict';
 
-let gulp = require('gulp');
-let browserSync = require('browser-sync').create();
-let sass = require('gulp-sass')
-let del = require('del')
-let plumber = require('gulp-plumber')
+const gulp        = require('gulp');
+const browserSync = require('browser-sync').create();
+const sass        = require('gulp-sass');
+const del         = require('del');
+const plumber     = require('gulp-plumber');
 
+gulp.task('delHtml',function() {
+  del(['html/*.html']);
+});
+gulp.task('delJs',function() {
+  del(['html/js/*.js']);
+});
+gulp.task('delSass',function() {
+  del(['html/css/*.css']);
+});
 
-
-
-gulp.task('delHtml', function(){
-  del(['html/**/*.html'])
-})
-gulp.task('delSass', function(){
-  del(['html/css/**/*.css'])
-})
-
-gulp.task('copy', function() {
-  return gulp.src([
-      '_assets/**/*.html'
-    ])
+gulp.task('copyHtml',function() {
+  return gulp.src(['assets/**/*.html'])
   .pipe(plumber())
   .pipe(gulp.dest('html/'))
   .pipe(browserSync.stream());
 });
 
-gulp.task('sass', function(){
-  return gulp.src([
-      '_assets/sass/**/*.scss'
-    ])
+gulp.task('copyJs',function() {
+  return gulp.src(['assets/js/*.js'])
   .pipe(plumber())
-  .pipe(sass({outputStyle:'expanded'}))
-  .pipe(gulp.dest('html/css/'))
-  .pipe(browserSync.stream())
-})
-
-gulp.task('default',['delHtml','delSass','copy','sass'], function(){
-  browserSync.init({
-    server: {baseDir: 'html'},
-    browser: 'chrome'
-  });
-  gulp.watch(['_assets/**/*.html'],['delHtml','copy']);
-  gulp.watch(['_assets/sass/**/*.scss'],['delSass','sass']);
+  .pipe(gulp.dest('html/js/'))
+  .pipe(browserSync.stream());
 });
 
+gulp.task('sass',function() {
+  return gulp.src(['assets/sass/*.scss'])
+  .pipe(plumber())
+  .pipe(sass({outputStyle: 'compressed'}))
+  .pipe(gulp.dest('html/css/'))
+  .pipe(browserSync.stream());
+});
 
+gulp.task('default',['delHtml','delJs','delSass','copyHtml','copyJs','sass'], function() {
+  browserSync.init({
+    server: {
+      baseDir: 'html'
+    }
+  });
+  gulp.watch(['assets/**/*.html'],['delHtml','copyHtml']);
+  gulp.watch(['assets/js/*.js'],['delJs','copyJs']);
+  gulp.watch(['assets/sass/*.scss'],['delSass','sass']);
+})
